@@ -32,5 +32,11 @@ First-page preview of PDF files in the Windows File Explorer preview pane (#3207
 macOS Quick Look and Linux file managers use their own preview mechanisms; there the crate is only
 linked for shared tests of the rendering helper.
 
+The handler shows the page in a child window of the host (class `PdfCraft.PreviewPane`), created
+on `DoPreview` and painted from its own `WM_PAINT`, so the page survives the host's repaints (a
+resize, a window passing over the pane). The page is rendered once per pane size; `SetRect` moves
+the window and re-renders when the size changed; `Unload`, or the last release, destroys it.
+
 This is the one crate where `unsafe` is allowed, and only in `src/windows.rs`: a COM server's
-exported entry points take raw pointers, and the preview bitmap is painted through GDI.
+exported entry points take raw pointers, the window procedure reads the picture its window was
+created with, and the picture is painted through GDI.
